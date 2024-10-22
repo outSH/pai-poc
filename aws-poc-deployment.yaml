@@ -1,52 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
 Metadata:
-  TemplateId: arn:aws:cloudformation:eu-central-1:050451385578:generatedTemplate/c30c4ee5-3a71-4543-908e-4ae37bff78a0
+  Version: 1.0
 Parameters:
+  s3PrefixListId:
+    Type: String
+    Default: pl-6ea54007
+    Description: Prefixlist ID of S3 service on the region of the deployment.
   s3InputBucketName:
     Type: String
     Default: pai-poc-input-poc-18f87234757f
     Description: Bucket name for input files (must be unique within region)
+  s3DeploymentBucketName:
+    Type: String
+    Default: pai-poc-0044-deployment
+    Description:
+      An Amazon S3 bucket in the same AWS-Region as your function. The
+      bucket can be in a different AWS-account.
   rdsDbRootPassword:
-    NoEcho: 'true'
+    NoEcho: "true"
     Default: UDp14bBpuvrFOhyggbqV
     Type: String
     Description: RDS DB master password
-  paiStoreToPDLS3Bucket:
-    Type: String
-    Default: pai-poc-0044-deployment
-    Description: An Amazon S3 bucket in the same AWS-Region as your function. The
-      bucket can be in a different AWS-account.
   paiStoreToPDLS3Key:
     Type: String
     Default: src/lambda/b1-paiStoreToPDL/package.zip
     Description: The Amazon S3 key of the deployment package.
-  transferToPAIS3Bucket:
-    Type: String
-    Default: pai-poc-0044-deployment
-    Description: An Amazon S3 bucket in the same AWS-Region as your function. The
-      bucket can be in a different AWS-account.
   transferToPAIS3Key:
     Type: String
     Default: src/lambda/b2-transferToPAI/package.zip
     Description: The Amazon S3 key of the deployment package.
-  processActionsS3Bucket:
-    Type: String
-    Default: pai-poc-0044-deployment
-    Description: An Amazon S3 bucket in the same AWS-Region as your function. The
-      bucket can be in a different AWS-account.
   processActionsS3Key:
     Type: String
     Default: src/lambda/b3-processActions/package.zip
     Description: The Amazon S3 key of the deployment package.
-  createActionsReportS3Bucket:
-    Type: String
-    Default: pai-poc-0044-deployment
-    Description: An Amazon S3 bucket in the same AWS-Region as your function. The
-      bucket can be in a different AWS-account.
   createActionsReportS3Key:
     Type: String
     Default: src/lambda/b4-createActionsReport/package.zip
     Description: The Amazon S3 key of the deployment package.
 Resources:
+  ######################################################################
+  # S3
+  ######################################################################
+
   S3InputBucket:
     UpdateReplacePolicy: Retain
     Type: AWS::S3::Bucket
@@ -66,470 +61,55 @@ Resources:
           - BucketKeyEnabled: true
             ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-  IAMManagedPolicy00policyserviceroleAWSLambdaBasicExecutionRoleb141d1f1e5294342ba4ca790f0e25c8500VV7SG:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: AWSLambdaBasicExecutionRole-b141d1f1-e529-4342-ba4c-a790f0e25c85
-      Path: /service-role/
-      Description: ''
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource: arn:aws:logs:eu-central-1:050451385578:*
-            Action: logs:CreateLogGroup
-            Effect: Allow
-          - Resource:
-              - arn:aws:logs:eu-central-1:050451385578:log-group:/aws/lambda/b2-transferToPAI:*
-            Action:
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Effect: Allow
-      Users: []
-  EC2Subnet00subnet0cbe913976d461ba700LElVY:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::Subnet
-    DeletionPolicy: Delete
-    Properties:
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      MapPublicIpOnLaunch: false
-      EnableDns64: false
-      AvailabilityZoneId: euc1-az3
-      PrivateDnsNameOptionsOnLaunch:
-        EnableResourceNameDnsARecord: false
-        HostnameType: ip-name
-        EnableResourceNameDnsAAAARecord: false
-      CidrBlock: 10.1.0.128/26
-      Ipv6Native: false
-      Tags:
-        - Value: dummy-private
-          Key: Name
-  RDSAllowAllSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow all access to RDS within the VPC
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      SecurityGroupIngress:
-        - IpProtocol: -1 
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: 10.1.0.0/24
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: 10.1.0.0/24
-  LambdaAllowAllSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow all access from Lambda within the VPC
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      SecurityGroupIngress:
-        - IpProtocol: -1
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: 10.1.0.0/24
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: 10.1.0.0/24
-  IAMManagedPolicy00policyserviceroleAmazonEventBridgeSchedulerExecutionPolicy4f9052cf95534a17a9a2bdb5dc6e7174004At7H:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: Amazon-EventBridge-Scheduler-Execution-Policy-4f9052cf-9553-4a17-a9a2-bdb5dc6e7174
-      Path: /service-role/
-      Description: ''
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource:
-              - arn:aws:states:eu-central-1:050451385578:stateMachine:pai-poc-state-machine
-            Action:
-              - states:StartExecution
-            Effect: Allow
-      Users: []
-  LogsLogGroup00awsvendedlogsstatespaipocstatemachineLogs00LfFZq:
-    UpdateReplacePolicy: Retain
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Delete
-    Properties:
-      LogGroupClass: STANDARD
-      LogGroupName: /aws/vendedlogs/states/pai-poc-state-machine-Logs
-      DataProtectionPolicy: {}
-  # EC2Route00rtb0fba03b7f67668cfc00p1Q0z:
-  #   UpdateReplacePolicy: Retain
-  #   Type: AWS::EC2::Route
-  #   DeletionPolicy: Delete
-  #   Properties:
-  #     RouteTableId: !Ref EC2RouteTable00rtb0fba03b7f67668cfc001B1cs
-  #     DestinationCidrBlock: !GetAtt EC2VPC00vpc0811ff3667e958d480081h54.CidrBlock
-  #     GatewayId: local
-  #     VpcEndpointId: local
-  IAMRole00b2transferToPAIrolek226tn9p00MA8eW:
+
+  ######################################################################
+  # LAMBDA
+  ######################################################################
+
+  # Lambda - Batch 1
+  LambdaFunctionPaiStoreToPDLBatch1Role:
     UpdateReplacePolicy: Retain
     Type: AWS::IAM::Role
     DeletionPolicy: Delete
     Properties:
       Path: /service-role/
       ManagedPolicyArns:
-        - !Ref IAMManagedPolicy00policyserviceroleAWSLambdaLambdaFunctionDestinationExecutionRoleaffcdf2c059b4979b9478157bd7bbb20000utZO
-        - !Ref IAMManagedPolicy00policyserviceroleAWSLambdaBasicExecutionRoleb141d1f1e5294342ba4ca790f0e25c8500VV7SG
-      MaxSessionDuration: 3600
-      RoleName: b2-transferToPAI-role-k226tn9p
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-  IAMRole00b1paiStoreToPDL172950554340100BEfbm:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::Role
-    DeletionPolicy: Delete
-    Properties:
-      Path: /service-role/
-      ManagedPolicyArns:
-        - !Ref IAMManagedPolicy00policyserviceroleAWSLambdaLambdaFunctionDestinationExecutionRole1b21b0b513a049d28da79464e8ff072700IJ6ia
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       MaxSessionDuration: 3600
       RoleName: b1-paiStoreToPDL-1729505543401
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Action: sts:AssumeRole
             Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
             Sid: AWSLambdaVPCAccessExecutionRole
-  EC2SubnetNetworkAclAssociation00aclassoc00e040f0e2a6116e300R7Bab:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::SubnetNetworkAclAssociation
-    DeletionPolicy: Delete
-    Properties:
-      NetworkAclId: !Ref EC2NetworkAcl00acl01df3cc126064437300FD1Dq
-      SubnetId: !Ref EC2Subnet00subnet03a5e1d7db96f95c200tqI6y
-  LambdaFunction00b4createActionsReport00diWxY:
+  LambdaFunctionPaiStoreToPDLBatch1:
     UpdateReplacePolicy: Retain
     Type: AWS::Lambda::Function
     DeletionPolicy: Delete
     Properties:
       MemorySize: 128
-      Description: ''
+      Description: ""
       TracingConfig:
         Mode: PassThrough
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LambdaAllowAllSecurityGroup.GroupId
+          - !GetAtt AllowS3AccessSecurityGroup.GroupId
         SubnetIds:
-          - !Ref EC2Subnet00subnet03a5e1d7db96f95c200tqI6y
-        Ipv6AllowedForDualStack: false
-      Timeout: 3
-      RuntimeManagementConfig:
-        UpdateRuntimeOn: Auto
-      Handler: createActionsReport.lambda_handler
-      Code:
-        S3Bucket: !Ref createActionsReportS3Bucket
-        S3Key: !Ref createActionsReportS3Key
-      Role: !GetAtt IAMRole00b4createActionsReport172951181767300y6xwB.Arn
-      FileSystemConfigs: []
-      FunctionName: b4-createActionsReport
-      Runtime: python3.12
-      PackageType: Zip
-      LoggingConfig:
-        LogFormat: Text
-        LogGroup: /aws/lambda/b4-createActionsReport
-      RecursiveLoop: Terminate
-      Environment:
-        Variables:
-          RDS_HOST: !GetAtt RDSDBInstance00paipocdb00NgTVY.Endpoint.Address
-          DB_NAME: PaiDB
-          USER_NAME: admin
-          PASSWORD: !Ref rdsDbRootPassword
-      EphemeralStorage:
-        Size: 512
-      Architectures:
-        - x86_64
-  IAMManagedPolicy00policyserviceroleLambdaInvokeScopedAccessPolicy69aa7134c7454d3586e7176c16e715f600gudhG:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: LambdaInvokeScopedAccessPolicy-69aa7134-c745-4d35-86e7-176c16e715f6
-      Path: /service-role/
-      Description: Allow AWS Step Functions to invoke Lambda functions on your behalf
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource:
-              - arn:aws:lambda:eu-central-1:050451385578:function:b4-createActionsReport:*
-              - arn:aws:lambda:eu-central-1:050451385578:function:b3-processActions:*
-              - arn:aws:lambda:eu-central-1:050451385578:function:b2-transferToPAI:*
-              - arn:aws:lambda:eu-central-1:050451385578:function:b1-paiStoreToPDL:*
-            Action:
-              - lambda:InvokeFunction
-            Effect: Allow
-          - Resource:
-              - arn:aws:lambda:eu-central-1:050451385578:function:b4-createActionsReport
-              - arn:aws:lambda:eu-central-1:050451385578:function:b3-processActions
-              - arn:aws:lambda:eu-central-1:050451385578:function:b2-transferToPAI
-              - arn:aws:lambda:eu-central-1:050451385578:function:b1-paiStoreToPDL
-            Action:
-              - lambda:InvokeFunction
-            Effect: Allow
-      Users: []
-  EC2SubnetNetworkAclAssociation00aclassoc01208a8f691be41a700tkcoy:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::SubnetNetworkAclAssociation
-    DeletionPolicy: Delete
-    Properties:
-      NetworkAclId: !Ref EC2NetworkAcl00acl01df3cc126064437300FD1Dq
-      SubnetId: !Ref EC2Subnet00subnet0cbe913976d461ba700LElVY
-  IAMManagedPolicy00policyserviceroleXRayAccessPolicy0b7587950472465ba06a170aa533d99000PBiCu:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: XRayAccessPolicy-0b758795-0472-465b-a06a-170aa533d990
-      Path: /service-role/
-      Description: Allow AWS Step Functions to call X-Ray daemon on your behalf
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource:
-              - '*'
-            Action:
-              - xray:PutTraceSegments
-              - xray:PutTelemetryRecords
-              - xray:GetSamplingRules
-              - xray:GetSamplingTargets
-            Effect: Allow
-      Users: []
-  EC2VPC00vpc0811ff3667e958d480081h54:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::VPC
-    DeletionPolicy: Delete
-    Properties:
-      CidrBlock: 10.1.0.0/24
-      EnableDnsSupport: true
-      InstanceTenancy: default
-      EnableDnsHostnames: false
-      Tags:
-        - Value: pai-poc-vpc
-          Key: Name
-  SchedulerSchedule00PaiBatchProcessingSchedule00Rv8pn:
-    UpdateReplacePolicy: Retain
-    Type: AWS::Scheduler::Schedule
-    DeletionPolicy: Delete
-    Properties:
-      GroupName: default
-      ScheduleExpression: cron(0 2 * * ? *)
-      Target:
-        Arn: !Ref StepFunctionsStateMachine00stateMachinepaipocstatemachine0035KzV
-        RetryPolicy:
-          MaximumEventAgeInSeconds: 86400
-          MaximumRetryAttempts: 2
-        RoleArn: !GetAtt IAMRole00AmazonEventBridgeSchedulerSFNb2ea7bbcb600T3VJG.Arn
-      Description: Run PAI PoC batch processing operation on specified time
-      State: ENABLED
-      FlexibleTimeWindow:
-        Mode: 'OFF'
-      ScheduleExpressionTimezone: UTC
-      Name: PaiBatchProcessingSchedule
-  IAMManagedPolicy00policyserviceroleAWSLambdaLambdaFunctionDestinationExecutionRole404cf439fa6741c5b802836ddac82e0100muzqX:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: AWSLambdaLambdaFunctionDestinationExecutionRole-404cf439-fa67-41c5-b802-836ddac82e01
-      Path: /service-role/
-      Description: ''
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource: arn:aws:lambda:eu-central-1:050451385578:function:b4-createActionsReport*
-            Action: lambda:InvokeFunction
-            Effect: Allow
-      Users: []
-  EC2NetworkAcl00acl01df3cc126064437300FD1Dq:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::NetworkAcl
-    DeletionPolicy: Delete
-    Properties:
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      Tags: []
-  EC2DHCPOptions00dopt0642d6f731b81bc5700m6LUa:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::DHCPOptions
-    DeletionPolicy: Delete
-    Properties:
-      DomainName: eu-central-1.compute.internal
-      DomainNameServers:
-        - AmazonProvidedDNS
-      Tags: []
-  IAMRole00AmazonEventBridgeSchedulerSFNb2ea7bbcb600T3VJG:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::Role
-    DeletionPolicy: Delete
-    Properties:
-      Path: /service-role/
-      ManagedPolicyArns:
-        - !Ref IAMManagedPolicy00policyserviceroleAmazonEventBridgeSchedulerExecutionPolicy4f9052cf95534a17a9a2bdb5dc6e7174004At7H
-      MaxSessionDuration: 3600
-      RoleName: Amazon_EventBridge_Scheduler_SFN_b2ea7bbcb6
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Condition:
-              StringEquals:
-                aws:SourceAccount: '050451385578'
-            Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: scheduler.amazonaws.com
-  LambdaFunction00b3processActions00f4k3V:
-    UpdateReplacePolicy: Retain
-    Type: AWS::Lambda::Function
-    DeletionPolicy: Delete
-    Properties:
-      MemorySize: 128
-      Description: ''
-      TracingConfig:
-        Mode: PassThrough
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaAllowAllSecurityGroup.GroupId
-        SubnetIds:
-          - !Ref EC2Subnet00subnet03a5e1d7db96f95c200tqI6y
-        Ipv6AllowedForDualStack: false
-      Timeout: 3
-      RuntimeManagementConfig:
-        UpdateRuntimeOn: Auto
-      Handler: processActions.lambda_handler
-      Code:
-        S3Bucket: !Ref processActionsS3Bucket
-        S3Key: !Ref processActionsS3Key
-      Role: !GetAtt IAMRole00b3processActions172951070396700O1vhA.Arn
-      FileSystemConfigs: []
-      FunctionName: b3-processActions
-      Runtime: python3.12
-      PackageType: Zip
-      LoggingConfig:
-        LogFormat: Text
-        LogGroup: /aws/lambda/b3-processActions
-      RecursiveLoop: Terminate
-      Environment:
-        Variables:
-          RDS_HOST: !GetAtt RDSDBInstance00paipocdb00NgTVY.Endpoint.Address
-          DB_NAME: PaiDB
-          USER_NAME: admin
-          PASSWORD: !Ref rdsDbRootPassword
-      EphemeralStorage:
-        Size: 512
-      Architectures:
-        - x86_64
-  IAMRole00b4createActionsReport172951181767300y6xwB:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::Role
-    DeletionPolicy: Delete
-    Properties:
-      Path: /service-role/
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-      MaxSessionDuration: 3600
-      RoleName: b4-createActionsReport-1729511817673
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Sid: AWSLambdaVPCAccessExecutionRole
-  RDSDBInstance00paipocdb00NgTVY:
-    UpdateReplacePolicy: Retain
-    Type: AWS::RDS::DBInstance
-    DeletionPolicy: Delete
-    Properties:
-      StorageEncrypted: true
-      AssociatedRoles: []
-      CertificateDetails: {}
-      Port: '3306'
-      ProcessorFeatures: []
-      PreferredBackupWindow: 20:58-21:28
-      MonitoringInterval: 0
-      DBParameterGroupName: default.mysql8.0
-      Endpoint: {}
-      NetworkType: IPV4
-      DedicatedLogVolume: false
-      CopyTagsToSnapshot: true
-      MultiAZ: false
-      Engine: mysql
-      Tags: []
-      EngineLifecycleSupport: open-source-rds-extended-support-disabled
-      LicenseModel: general-public-license
-      EngineVersion: 8.0.39
-      StorageType: gp3
-      KmsKeyId: !GetAtt KMSKey00c0d2c5f43a9a4e30b1d2033a2f0c6aad006s1j9.Arn
-      DBInstanceClass: db.t4g.micro
-      AvailabilityZone: eu-central-1a
-      OptionGroupName: default:mysql-8-0
-      PreferredMaintenanceWindow: tue:23:12-tue:23:42
-      EnablePerformanceInsights: false
-      AutoMinorVersionUpgrade: true
-      DBSubnetGroupName: !Ref RDSDBSubnetGroup00defaultvpc0811ff3667e958d48005R9zJ
-      DeletionProtection: false
-      DBInstanceIdentifier: pai-poc-db
-      AllocatedStorage: '20'
-      CACertificateIdentifier: rds-ca-rsa2048-g1
-      ManageMasterUserPassword: false
-      MasterUserSecret: {}
-      VPCSecurityGroups:
-        - !GetAtt RDSAllowAllSecurityGroup.GroupId
-      DBSecurityGroups: []
-      MasterUsername: admin
-      MasterUserPassword: !Ref rdsDbRootPassword
-      DBName: PaiDB
-      EnableIAMDatabaseAuthentication: false
-      BackupRetentionPeriod: 0
-      PubliclyAccessible: false
-      EnableCloudwatchLogsExports:
-        - error
-        - general
-  LambdaFunction00b1paiStoreToPDL00Eloos:
-    UpdateReplacePolicy: Retain
-    Type: AWS::Lambda::Function
-    DeletionPolicy: Delete
-    Properties:
-      MemorySize: 128
-      Description: ''
-      TracingConfig:
-        Mode: PassThrough
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaAllowAllSecurityGroup.GroupId
-          - !GetAtt EC2SecurityGroup00sg059a6cf02f49c4d2a00kXN2i.GroupId
-        SubnetIds:
-          - !Ref EC2Subnet00subnet03a5e1d7db96f95c200tqI6y
+          - !Ref MainPrivatePAIPoCSubnet
         Ipv6AllowedForDualStack: false
       Timeout: 10
       RuntimeManagementConfig:
         UpdateRuntimeOn: Auto
       Handler: paiStoreToPDL.lambda_handler
       Code:
-        S3Bucket: !Ref paiStoreToPDLS3Bucket
+        S3Bucket: !Ref s3DeploymentBucketName
         S3Key: !Ref paiStoreToPDLS3Key
-      Role: !GetAtt IAMRole00b1paiStoreToPDL172950554340100BEfbm.Arn
+      Role: !GetAtt LambdaFunctionPaiStoreToPDLBatch1Role.Arn
       FileSystemConfigs: []
       FunctionName: b1-paiStoreToPDL
       Runtime: python3.12
@@ -540,7 +120,7 @@ Resources:
       RecursiveLoop: Terminate
       Environment:
         Variables:
-          RDS_HOST: !GetAtt RDSDBInstance00paipocdb00NgTVY.Endpoint.Address
+          RDS_HOST: !GetAtt RDSDBInstance.Endpoint.Address
           DB_NAME: PaiDB
           USER_NAME: admin
           PASSWORD: !Ref rdsDbRootPassword
@@ -548,194 +128,30 @@ Resources:
         Size: 512
       Architectures:
         - x86_64
-  IAMRole00StepFunctionspaipocstatemachineroleed8o6qcwr00LXcM9:
+
+  # Lambda - Batch 2
+  LambdaFunctionTransferToPAIBatch2Role:
     UpdateReplacePolicy: Retain
     Type: AWS::IAM::Role
     DeletionPolicy: Delete
     Properties:
       Path: /service-role/
-      ManagedPolicyArns:
-        - !Ref IAMManagedPolicy00policyserviceroleXRayAccessPolicy0b7587950472465ba06a170aa533d99000PBiCu
-        - !Ref IAMManagedPolicy00policyserviceroleCloudWatchLogsDeliveryFullAccessPolicy73562b65db2e4c2481f3367ec9937aef00lFGFp
-        - !Ref IAMManagedPolicy00policyserviceroleLambdaInvokeScopedAccessPolicy69aa7134c7454d3586e7176c16e715f600gudhG
       MaxSessionDuration: 3600
-      RoleName: StepFunctions-pai-poc-state-machine-role-ed8o6qcwr
+      RoleName: b2-transferToPAI-role-k226tn9p
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: states.amazonaws.com
-  EC2RouteTable00rtb0fba03b7f67668cfc001B1cs:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::RouteTable
-    DeletionPolicy: Delete
-    Properties:
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-  IAMManagedPolicy00policyserviceroleAWSLambdaLambdaFunctionDestinationExecutionRole1b21b0b513a049d28da79464e8ff072700IJ6ia:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: AWSLambdaLambdaFunctionDestinationExecutionRole-1b21b0b5-13a0-49d2-8da7-9464e8ff0727
-      Path: /service-role/
-      Description: ''
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource: arn:aws:lambda:eu-central-1:050451385578:function:b2-transferToPAI*
-            Action: lambda:InvokeFunction
-            Effect: Allow
-      Users: []
-  IAMManagedPolicy00policyserviceroleCloudWatchLogsDeliveryFullAccessPolicy73562b65db2e4c2481f3367ec9937aef00lFGFp:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::ManagedPolicy
-    DeletionPolicy: Delete
-    Properties:
-      ManagedPolicyName: CloudWatchLogsDeliveryFullAccessPolicy-73562b65-db2e-4c24-81f3-367ec9937aef
-      Path: /service-role/
-      Description: Allows AWS Step Functions to write execution logs to CloudWatch
-        Logs on your behalf
-      Groups: []
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Resource: '*'
-            Action:
-              - logs:CreateLogDelivery
-              - logs:GetLogDelivery
-              - logs:UpdateLogDelivery
-              - logs:DeleteLogDelivery
-              - logs:ListLogDeliveries
-              - logs:PutResourcePolicy
-              - logs:DescribeResourcePolicies
-              - logs:DescribeLogGroups
-            Effect: Allow
-      Users: []
-  EC2VPCEndpoint00vpce00a22dac063c27d1000RIWAL:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::VPCEndpoint
-    DeletionPolicy: Delete
-    Properties:
-      PrivateDnsEnabled: false
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      RouteTableIds:
-        - !Ref EC2RouteTable00rtb0fba03b7f67668cfc001B1cs
-      ServiceName: com.amazonaws.eu-central-1.s3
-      PolicyDocument:
-        Version: '2008-10-17'
-        Statement:
-          - Resource: '*'
-            Action: '*'
-            Effect: Allow
-            Principal: '*'
-      VpcEndpointType: Gateway
-      SecurityGroupIds: []
-      SubnetIds: []
-  EC2SecurityGroup00sg059a6cf02f49c4d2a00kXN2i:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::SecurityGroup
-    DeletionPolicy: Delete
-    Properties:
-      GroupDescription: Allows access to S3 service
-      GroupName: s3-access
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      SecurityGroupEgress:
-        - IpProtocol: '-1'
-          FromPort: -1
-          DestinationPrefixListId: pl-6ea54007
-          ToPort: -1
-  EC2Subnet00subnet03a5e1d7db96f95c200tqI6y:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::Subnet
-    DeletionPolicy: Delete
-    Properties:
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      MapPublicIpOnLaunch: false
-      EnableDns64: false
-      AvailabilityZoneId: euc1-az2
-      PrivateDnsNameOptionsOnLaunch:
-        EnableResourceNameDnsARecord: false
-        HostnameType: ip-name
-        EnableResourceNameDnsAAAARecord: false
-      CidrBlock: 10.1.0.0/26
-      Ipv6Native: false
-      Tags:
-        - Value: main-private
-          Key: Name
-  IAMRole00b3processActions172951070396700O1vhA:
-    UpdateReplacePolicy: Retain
-    Type: AWS::IAM::Role
-    DeletionPolicy: Delete
-    Properties:
-      Path: /service-role/
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        - !Ref IAMManagedPolicy00policyserviceroleAWSLambdaLambdaFunctionDestinationExecutionRole404cf439fa6741c5b802836ddac82e0100muzqX
-      MaxSessionDuration: 3600
-      RoleName: b3-processActions-1729510703967
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Action: sts:AssumeRole
             Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Sid: AWSLambdaVPCAccessExecutionRole
-  StepFunctionsStateMachine00stateMachinepaipocstatemachine0035KzV:
-    UpdateReplacePolicy: Retain
-    Type: AWS::StepFunctions::StateMachine
-    DeletionPolicy: Delete
-    Properties:
-      DefinitionString: '{"Comment":"A description of my state
-        machine","StartAt":"Lambda: Store to PDL","States":{"Lambda: Store to
-        PDL":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:eu-central-1:050451385578:function:b1-paiStoreToPDL:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Lambda:
-        Transfer to PAI"},"Lambda: Transfer to
-        PAI":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:eu-central-1:050451385578:function:b2-transferToPAI:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Lambda:
-        Process Actions"},"Lambda: Process
-        Actions":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:eu-central-1:050451385578:function:b3-processActions:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Lambda:
-        Create actions report"},"Lambda: Create actions
-        report":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:eu-central-1:050451385578:function:b4-createActionsReport:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Success"},"Success":{"Type":"Succeed"}}}'
-      EncryptionConfiguration:
-        Type: AWS_OWNED_KEY
-      LoggingConfiguration:
-        IncludeExecutionData: true
-        Destinations:
-          - CloudWatchLogsLogGroup:
-              LogGroupArn: !GetAtt LogsLogGroup00awsvendedlogsstatespaipocstatemachineLogs00LfFZq.Arn
-        Level: ERROR
-      StateMachineName: pai-poc-state-machine
-      RoleArn: !GetAtt IAMRole00StepFunctionspaipocstatemachineroleed8o6qcwr00LXcM9.Arn
-      Tags: []
-      StateMachineType: STANDARD
-      TracingConfiguration:
-        Enabled: false
-  EC2VPCDHCPOptionsAssociation00vpc0811ff3667e958d48005adsM:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::VPCDHCPOptionsAssociation
-    DeletionPolicy: Delete
-    Properties:
-      VpcId: !Ref EC2VPC00vpc0811ff3667e958d480081h54
-      DhcpOptionsId: !Ref EC2DHCPOptions00dopt0642d6f731b81bc5700m6LUa
-  RDSDBSubnetGroup00defaultvpc0811ff3667e958d48005R9zJ:
-    UpdateReplacePolicy: Retain
-    Type: AWS::RDS::DBSubnetGroup
-    DeletionPolicy: Delete
-    Properties:
-      DBSubnetGroupDescription: Created from the RDS Management Console
-      SubnetIds:
-        - !Ref EC2Subnet00subnet03a5e1d7db96f95c200tqI6y
-        - !Ref EC2Subnet00subnet0cbe913976d461ba700LElVY
-      DBSubnetGroupName: default-vpc-0811ff3667e958d48
-  LambdaFunction00b2transferToPAI00FrF7p:
+  LambdaFunctionTransferToPAIBatch2:
     UpdateReplacePolicy: Retain
     Type: AWS::Lambda::Function
     DeletionPolicy: Delete
     Properties:
       MemorySize: 128
-      Description: ''
+      Description: ""
       TracingConfig:
         Mode: PassThrough
       Timeout: 3
@@ -743,9 +159,9 @@ Resources:
         UpdateRuntimeOn: Auto
       Handler: transferToPAI.lambda_handler
       Code:
-        S3Bucket: !Ref transferToPAIS3Bucket
+        S3Bucket: !Ref s3DeploymentBucketName
         S3Key: !Ref transferToPAIS3Key
-      Role: !GetAtt IAMRole00b2transferToPAIrolek226tn9p00MA8eW.Arn
+      Role: !GetAtt LambdaFunctionTransferToPAIBatch2Role.Arn
       FileSystemConfigs: []
       FunctionName: b2-transferToPAI
       Runtime: python3.12
@@ -758,48 +174,519 @@ Resources:
         Size: 512
       Architectures:
         - x86_64
-  IAMManagedPolicy00policyserviceroleAWSLambdaLambdaFunctionDestinationExecutionRoleaffcdf2c059b4979b9478157bd7bbb20000utZO:
+
+  # Lambda - Batch 3
+  LambdaFunctionProcessActionsBatch3Role:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::Role
+    DeletionPolicy: Delete
+    Properties:
+      Path: /service-role/
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      MaxSessionDuration: 3600
+      RoleName: b3-processActions-1729510703967
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Sid: AWSLambdaVPCAccessExecutionRole
+  LambdaFunctionProcessActionsBatch3:
+    UpdateReplacePolicy: Retain
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Delete
+    Properties:
+      MemorySize: 128
+      Description: ""
+      TracingConfig:
+        Mode: PassThrough
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt LambdaAllowAllSecurityGroup.GroupId
+        SubnetIds:
+          - !Ref MainPrivatePAIPoCSubnet
+        Ipv6AllowedForDualStack: false
+      Timeout: 3
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
+      Handler: processActions.lambda_handler
+      Code:
+        S3Bucket: !Ref s3DeploymentBucketName
+        S3Key: !Ref processActionsS3Key
+      Role: !GetAtt LambdaFunctionProcessActionsBatch3Role.Arn
+      FileSystemConfigs: []
+      FunctionName: b3-processActions
+      Runtime: python3.12
+      PackageType: Zip
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: /aws/lambda/b3-processActions
+      RecursiveLoop: Terminate
+      Environment:
+        Variables:
+          RDS_HOST: !GetAtt RDSDBInstance.Endpoint.Address
+          DB_NAME: PaiDB
+          USER_NAME: admin
+          PASSWORD: !Ref rdsDbRootPassword
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - x86_64
+
+  # Lambda - Batch 4
+  LambdaFunctionCreateActionsReportBatch4Role:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::Role
+    DeletionPolicy: Delete
+    Properties:
+      Path: /service-role/
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      MaxSessionDuration: 3600
+      RoleName: b4-createActionsReport-1729511817673
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Sid: AWSLambdaVPCAccessExecutionRole
+  LambdaFunctionCreateActionsReportBatch4:
+    UpdateReplacePolicy: Retain
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Delete
+    Properties:
+      MemorySize: 128
+      Description: ""
+      TracingConfig:
+        Mode: PassThrough
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt LambdaAllowAllSecurityGroup.GroupId
+        SubnetIds:
+          - !Ref MainPrivatePAIPoCSubnet
+        Ipv6AllowedForDualStack: false
+      Timeout: 3
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
+      Handler: createActionsReport.lambda_handler
+      Code:
+        S3Bucket: !Ref s3DeploymentBucketName
+        S3Key: !Ref createActionsReportS3Key
+      Role: !GetAtt LambdaFunctionCreateActionsReportBatch4Role.Arn
+      FileSystemConfigs: []
+      FunctionName: b4-createActionsReport
+      Runtime: python3.12
+      PackageType: Zip
+      LoggingConfig:
+        LogFormat: Text
+        LogGroup: /aws/lambda/b4-createActionsReport
+      RecursiveLoop: Terminate
+      Environment:
+        Variables:
+          RDS_HOST: !GetAtt RDSDBInstance.Endpoint.Address
+          DB_NAME: PaiDB
+          USER_NAME: admin
+          PASSWORD: !Ref rdsDbRootPassword
+      EphemeralStorage:
+        Size: 512
+      Architectures:
+        - x86_64
+
+  ######################################################################
+  # NETWORK (VPC)
+  ######################################################################
+
+  # VPC
+  PAIPoCVPC:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::VPC
+    DeletionPolicy: Delete
+    Properties:
+      CidrBlock: 10.1.0.0/24
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      EnableDnsHostnames: false
+      Tags:
+        - Value: pai-poc-vpc
+          Key: Name
+
+  # VPC Endpoint
+  S3VPCGatewayEndpoint:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::VPCEndpoint
+    DeletionPolicy: Delete
+    Properties:
+      PrivateDnsEnabled: false
+      VpcEndpointType: "Gateway"
+      VpcId: !Ref PAIPoCVPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      PolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          - Resource: "*"
+            Action: "*"
+            Effect: Allow
+            Principal: "*"
+      RouteTableIds:
+        - !Ref PAIPoCVPCRouteTable
+
+  # Subnets
+  MainPrivatePAIPoCSubnet:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::Subnet
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref PAIPoCVPC
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: 10.1.0.0/26
+      Ipv6Native: false
+      Tags:
+        - Value: main-private
+          Key: Name
+  DummyPrivatePAIPoCSubnet:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::Subnet
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref PAIPoCVPC
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      AvailabilityZone: 
+        Fn::Select: 
+          - 1
+          - Fn::GetAZs: ""
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: 10.1.0.128/26
+      Ipv6Native: false
+      Tags:
+        - Value: dummy-private
+          Key: Name
+
+  # Route Table
+  PAIPoCVPCRouteTable:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::RouteTable
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref PAIPoCVPC
+  DummySubnetRouteTableAssociation:
+    UpdateReplacePolicy: Retain
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref DummyPrivatePAIPoCSubnet
+      RouteTableId: !Ref PAIPoCVPCRouteTable
+  MainSubnetRouteTableAssociation:
+    UpdateReplacePolicy: Retain
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref MainPrivatePAIPoCSubnet
+      RouteTableId: !Ref PAIPoCVPCRouteTable
+
+  # DHCP Options
+  PAIPoCDHCPOptions:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::DHCPOptions
+    DeletionPolicy: Delete
+    Properties:
+      DomainName: !Sub "${AWS::Region}.compute.internal"
+      DomainNameServers:
+        - AmazonProvidedDNS
+      Tags: []
+  PAIPoCDHCPOptionsAssociation:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref PAIPoCVPC
+      DhcpOptionsId: !Ref PAIPoCDHCPOptions
+
+  # Security Groups
+  RDSAllowAllSecurityGroup:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: Allow all access to RDS within the VPC
+      VpcId: !Ref PAIPoCVPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 10.1.0.0/24
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 10.1.0.0/24
+  LambdaAllowAllSecurityGroup:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: Allow all access from Lambda within the VPC
+      VpcId: !Ref PAIPoCVPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 10.1.0.0/24
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 10.1.0.0/24
+  AllowS3AccessSecurityGroup:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: Allows access to S3 service
+      GroupName: s3-access
+      VpcId: !Ref PAIPoCVPC
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          FromPort: -1
+          DestinationPrefixListId: !Ref s3PrefixListId
+          ToPort: -1
+
+  ######################################################################
+  # SCHEDULE
+  ######################################################################
+
+  ### Step Function (State machine)
+  StepFunctionsPaiXRayAccessPolicy:
     UpdateReplacePolicy: Retain
     Type: AWS::IAM::ManagedPolicy
     DeletionPolicy: Delete
     Properties:
-      ManagedPolicyName: AWSLambdaLambdaFunctionDestinationExecutionRole-affcdf2c-059b-4979-b947-8157bd7bbb20
+      ManagedPolicyName: XRayAccessPolicy-0b758795-0472-465b-a06a-170aa533d990
       Path: /service-role/
-      Description: ''
+      Description: Allow AWS Step Functions to call X-Ray daemon on your behalf
       Groups: []
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
-          - Resource: arn:aws:lambda:eu-central-1:050451385578:function:b3-processActions*
-            Action: lambda:InvokeFunction
+          - Resource:
+              - "*"
+            Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+              - xray:GetSamplingRules
+              - xray:GetSamplingTargets
             Effect: Allow
       Users: []
-  # EC2Route00rtb0fba03b7f67668cfc00pAddS:
-  #   UpdateReplacePolicy: Retain
-  #   Type: AWS::EC2::Route
-  #   DeletionPolicy: Delete
-  #   Properties:
-  #     RouteTableId: !Ref EC2RouteTable00rtb0fba03b7f67668cfc001B1cs
-  #     # DestinationPrefixListId: pl-6ea54007
-  #     # GatewayId: vpce-00a22dac063c27d10
-  #     VpcEndpointId: vpce-00a22dac063c27d10
-  KMSKey00c0d2c5f43a9a4e30b1d2033a2f0c6aad006s1j9:
+  StepFunctionsPaiCloudWatchLogsDeliveryFullAccessPolicy:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::ManagedPolicy
+    DeletionPolicy: Delete
+    Properties:
+      ManagedPolicyName: CloudWatchLogsDeliveryFullAccessPolicy-73562b65-db2e-4c24-81f3-367ec9937aef
+      Path: /service-role/
+      Description:
+        Allows AWS Step Functions to write execution logs to CloudWatch
+        Logs on your behalf
+      Groups: []
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource: "*"
+            Action:
+              - logs:CreateLogDelivery
+              - logs:GetLogDelivery
+              - logs:UpdateLogDelivery
+              - logs:DeleteLogDelivery
+              - logs:ListLogDeliveries
+              - logs:PutResourcePolicy
+              - logs:DescribeResourcePolicies
+              - logs:DescribeLogGroups
+            Effect: Allow
+      Users: []
+  StepFunctionsPaiLambdaInvokeScopedAccessPolicy:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::ManagedPolicy
+    DeletionPolicy: Delete
+    Properties:
+      ManagedPolicyName: LambdaInvokeScopedAccessPolicy-69aa7134-c745-4d35-86e7-176c16e715f6
+      Path: /service-role/
+      Description: Allow AWS Step Functions to invoke Lambda functions on your behalf
+      Groups: []
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource:
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b4-createActionsReport:*"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b3-processActions:*"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b2-transferToPAI:*"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b1-paiStoreToPDL:*"
+            Action:
+              - lambda:InvokeFunction
+            Effect: Allow
+          - Resource:
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b4-createActionsReport"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b3-processActions"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b2-transferToPAI"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b1-paiStoreToPDL"
+            Action:
+              - lambda:InvokeFunction
+            Effect: Allow
+      Users: []
+  StepFunctionsPaiRole:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::Role
+    DeletionPolicy: Delete
+    Properties:
+      Path: /service-role/
+      ManagedPolicyArns:
+        - !Ref StepFunctionsPaiXRayAccessPolicy
+        - !Ref StepFunctionsPaiCloudWatchLogsDeliveryFullAccessPolicy
+        - !Ref StepFunctionsPaiLambdaInvokeScopedAccessPolicy
+      MaxSessionDuration: 3600
+      RoleName: StepFunctions-pai-poc-state-machine-role-ed8o6qcwr
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+  StepFunctionsPaiLogGroup:
+    UpdateReplacePolicy: Retain
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupClass: STANDARD
+      LogGroupName: /aws/vendedlogs/states/pai-poc-state-machine-Logs
+      DataProtectionPolicy: {}
+  StepFunctionsPai:
+    UpdateReplacePolicy: Retain
+    Type: AWS::StepFunctions::StateMachine
+    DeletionPolicy: Delete
+    Properties:
+      DefinitionString: !Sub '{"Comment":"A description of my state
+        machine","StartAt":"Lambda: Store to PDL","States":{"Lambda: Store to
+        PDL":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b1-paiStoreToPDL:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Lambda:
+        Transfer to PAI"},"Lambda: Transfer to
+        PAI":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b2-transferToPAI:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Lambda:
+        Process Actions"},"Lambda: Process
+        Actions":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b3-processActions:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Lambda:
+        Create actions report"},"Lambda: Create actions
+        report":{"Type":"Task","Resource":"arn:aws:states:::lambda:invoke","OutputPath":"$.Payload","Parameters":{"FunctionName":"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:b4-createActionsReport:$LATEST"},"Retry":[{"ErrorEquals":["Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException","Lambda.TooManyRequestsException"],"IntervalSeconds":1,"MaxAttempts":3,"BackoffRate":2}],"Next":"Success"},"Success":{"Type":"Succeed"}}}'
+      EncryptionConfiguration:
+        Type: AWS_OWNED_KEY
+      LoggingConfiguration:
+        IncludeExecutionData: true
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt StepFunctionsPaiLogGroup.Arn
+        Level: ERROR
+      StateMachineName: pai-poc-state-machine
+      RoleArn: !GetAtt StepFunctionsPaiRole.Arn
+      Tags: []
+      StateMachineType: STANDARD
+      TracingConfiguration:
+        Enabled: false
+
+  ## Schedule (will run PAI Step Function at 2 AM every day)
+  PaiBatchProcessingScheduleExecutionPolicy:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::ManagedPolicy
+    DeletionPolicy: Delete
+    Properties:
+      ManagedPolicyName: Amazon-EventBridge-Scheduler-Execution-Policy-4f9052cf-9553-4a17-a9a2-bdb5dc6e7174
+      Path: /service-role/
+      Description: ""
+      Groups: []
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource:
+              - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:pai-poc-state-machine"
+            Action:
+              - states:StartExecution
+            Effect: Allow
+      Users: []
+  PaiBatchProcessingScheduleRole:
+    UpdateReplacePolicy: Retain
+    Type: AWS::IAM::Role
+    DeletionPolicy: Delete
+    Properties:
+      Path: /service-role/
+      ManagedPolicyArns:
+        - !Ref PaiBatchProcessingScheduleExecutionPolicy
+      MaxSessionDuration: 3600
+      RoleName: Amazon_EventBridge_Scheduler_SFN_b2ea7bbcb6
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Condition:
+              StringEquals:
+                aws:SourceAccount: !Sub "${AWS::AccountId}"
+            Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+  PaiBatchProcessingSchedule:
+    UpdateReplacePolicy: Retain
+    Type: AWS::Scheduler::Schedule
+    DeletionPolicy: Delete
+    Properties:
+      GroupName: default
+      ScheduleExpression: cron(0 2 * * ? *)
+      Target:
+        Arn: !Ref StepFunctionsPai
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 86400
+          MaximumRetryAttempts: 2
+        RoleArn: !GetAtt PaiBatchProcessingScheduleRole.Arn
+      Description: Run PAI PoC batch processing operation on specified time
+      State: ENABLED
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      ScheduleExpressionTimezone: UTC
+      Name: PaiBatchProcessingSchedule
+
+  ######################################################################
+  # DATABASE (RDS)
+  ######################################################################
+
+  # Database Key
+  RDSDBInstanceKMSKey:
     UpdateReplacePolicy: Retain
     Type: AWS::KMS::Key
     DeletionPolicy: Delete
     Properties:
       Origin: AWS_KMS
       MultiRegion: false
-      Description: Default key that protects my RDS database volumes when no other key
+      Description:
+        Default key that protects my RDS database volumes when no other key
         is defined
       KeyPolicy:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Condition:
               StringEquals:
-                kms:ViaService: rds.eu-central-1.amazonaws.com
-                kms:CallerAccount: '050451385578'
-            Resource: '*'
+                kms:ViaService: !Sub "rds.${AWS::Region}.amazonaws.com"
+                kms:CallerAccount: !Sub "${AWS::AccountId}"
+            Resource: "*"
             Action:
               - kms:Encrypt
               - kms:Decrypt
@@ -810,10 +697,11 @@ Resources:
               - kms:DescribeKey
             Effect: Allow
             Principal:
-              AWS: '*'
-            Sid: Allow access through RDS for all principals in the account that are
+              AWS: "*"
+            Sid:
+              Allow access through RDS for all principals in the account that are
               authorized to use RDS
-          - Resource: '*'
+          - Resource: "*"
             Action:
               - kms:Create*
               - kms:Describe*
@@ -834,7 +722,7 @@ Resources:
               - kms:GetKeyPolicy
             Effect: Allow
             Principal:
-              AWS: arn:aws:iam::050451385578:root
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Sid: Allow direct access to key metadata to the account
         Id: auto-rds-2
       KeySpec: SYMMETRIC_DEFAULT
@@ -842,3 +730,69 @@ Resources:
       EnableKeyRotation: true
       KeyUsage: ENCRYPT_DECRYPT
       Tags: []
+
+  # Subnet
+  RDSDBInstanceSubnetGroup:
+    UpdateReplacePolicy: Retain
+    Type: AWS::RDS::DBSubnetGroup
+    DeletionPolicy: Delete
+    Properties:
+      DBSubnetGroupDescription: Created from the RDS Management Console
+      SubnetIds:
+        - !Ref MainPrivatePAIPoCSubnet
+        - !Ref DummyPrivatePAIPoCSubnet
+      DBSubnetGroupName: default-vpc-0811ff3667e958d48
+
+  RDSDBInstance:
+    UpdateReplacePolicy: Retain
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    Properties:
+      StorageEncrypted: true
+      AssociatedRoles: []
+      CertificateDetails: {}
+      Port: "3306"
+      ProcessorFeatures: []
+      PreferredBackupWindow: 20:58-21:28
+      MonitoringInterval: 0
+      DBParameterGroupName: default.mysql8.0
+      Endpoint: {}
+      NetworkType: IPV4
+      DedicatedLogVolume: false
+      CopyTagsToSnapshot: true
+      MultiAZ: false
+      Engine: mysql
+      Tags: []
+      EngineLifecycleSupport: open-source-rds-extended-support-disabled
+      LicenseModel: general-public-license
+      EngineVersion: 8.0.39
+      StorageType: gp3
+      KmsKeyId: !GetAtt RDSDBInstanceKMSKey.Arn
+      DBInstanceClass: db.t4g.micro
+      AvailabilityZone:
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+      OptionGroupName: default:mysql-8-0
+      PreferredMaintenanceWindow: tue:23:12-tue:23:42
+      EnablePerformanceInsights: false
+      AutoMinorVersionUpgrade: true
+      DBSubnetGroupName: !Ref RDSDBInstanceSubnetGroup
+      DeletionProtection: false
+      DBInstanceIdentifier: pai-poc-db
+      AllocatedStorage: "20"
+      CACertificateIdentifier: rds-ca-rsa2048-g1
+      ManageMasterUserPassword: false
+      MasterUserSecret: {}
+      VPCSecurityGroups:
+        - !GetAtt RDSAllowAllSecurityGroup.GroupId
+      DBSecurityGroups: []
+      MasterUsername: admin
+      MasterUserPassword: !Ref rdsDbRootPassword
+      DBName: PaiDB
+      EnableIAMDatabaseAuthentication: false
+      BackupRetentionPeriod: 0
+      PubliclyAccessible: false
+      EnableCloudwatchLogsExports:
+        - error
+        - general
