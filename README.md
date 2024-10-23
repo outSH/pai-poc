@@ -88,3 +88,7 @@
     - PaiBatchProcessingSchedule
     - arn:aws:scheduler:eu-central-1:050451385578:schedule/default/PaiBatchProcessingSchedule
     - Execution role: Amazon_EventBridge_Scheduler_LAMBDA_7879545e7c
+
+- US:
+    - pai-poc-0044-deployment-us
+    - pl-63a5400a
