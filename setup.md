@@ -1,3 +1,49 @@
+## Dev
+
+### MySQL
+
+docker run -p 3306:3306 -p 33060:33060 --name pai-poc-db -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:8.0.40
+
+## Token
+
+{
+"alg": "RS256",
+"kid": "1VEDiXkUYvihqg8drFe6t0AaHTIUQOoHkkxL8d7Q-4o",
+"typ": "JWT"
+}.{
+"exp": 1729867989,
+"nbf": 1729781589,
+"ver": "1.0",
+"iss": "https://fjresearchportal.b2clogin.com/c8d2f7a8-ca90-47a0-af8e-886d52c444f0/v2.0/",
+"sub": "e4acb221-2238-48ac-9977-e863b702cfc2",
+"aud": "7f96177c-fee7-42b9-a047-cd23d2ed8b3d",
+"nonce": "defaultNonce",
+"iat": 1729781589,
+"auth_time": 1729781589,
+"tid": "a19f121d-81e1-4858-a9d8-736e267fd4c7",
+"oid": "e4acb221-2238-48ac-9977-e863b702cfc2",
+"extension_user_id": "e4acb221-2238-48ac-9977-e863b702cfc2",
+"extension_user_role": "user",
+"extension_agent1_id": "sandbox001",
+"extension_agent1_role": "administrator,tseal_user",
+"extension_agent2_id": "gccAgentT1",
+"extension_agent2_role": "administrator,tseal_user",
+"extension_agent3_id": "paiAgentT1",
+"extension_agent3_role": "administrator,tseal_user",
+"extension_agent4_id": "sandbox004",
+"extension_agent4_role": "administrator,tseal_user",
+"domain": "fujitsu.com",
+"tfp": "B2C_1A_SignIn_Username_Global"
+}.[Signature]
+
+# {
+
+# "id": "670e674ad98d34b42567bb1a",
+
+# "name": "gdc_pl_pai_poc"
+
+# }
+
 ## Setup
 
 #### Create Agents
@@ -29,28 +75,32 @@
 {
   "table_def": [
     {
-      "table_name": "table_depX1",
+      "table_name": "periodic_processing_x1",
       "table_sync": true,
       "column": [
         {
-          "name": "dep_id",
+          "name": "id",
+          "type": "serial"
+        },
+        {
+          "name": "uid",
           "type": "text"
         },
         {
-          "name": "dep_name",
-          "type": "text"
+          "name": "action",
+          "type": "integer"
         },
         {
-          "name": "dep_id1",
-          "type": "text"
+          "name": "eco_action_performed_at",
+          "type": "timestamptz"
         },
         {
-          "name": "dep_id2",
-          "type": "text"
+          "name": "quantity",
+          "type": "integer"
         }
       ],
-      "primary": ["dep_id"],
-      "unique": ["dep_id"],
+      "primary": ["id"],
+      "unique": ["id"],
       "sync_history": "on"
     }
   ]
@@ -66,24 +116,24 @@
   "register_type": "insert",
   "register_table": [
     {
-      "table_name": "table_depX1",
+      "table_name": "periodic_processing_x1",
       "data": [
         [
           {
-            "colname": "dep_id",
-            "value": "2"
+            "colname": "uid",
+            "value": "1234-abcd-5678"
           },
           {
-            "colname": "dep_name",
-            "value": "Registration information 1"
+            "colname": "action",
+            "value": 1
           },
           {
-            "colname": "dep_id1",
-            "value": "101"
+            "colname": "eco_action_performed_at",
+            "value": "2022-11-17 13:31:31"
           },
           {
-            "colname": "dep_id2",
-            "value": "asd"
+            "colname": "quantity",
+            "value": 2
           }
         ]
       ]
@@ -91,6 +141,14 @@
   ]
 }
 ```
+
+{
+"result": "OK",
+"detail": {
+"message": "Success",
+"process_id": 4729
+}
+}
 
 ### Get Data
 
@@ -101,23 +159,97 @@
 {
   "target": [
     {
-      "table_name": "table_depX1",
-      "column_name": "dep_id"
+      "table_name": "periodic_processing_x1",
+      "column_name": "id"
     },
     {
-      "table_name": "table_depX1",
-      "column_name": "dep_name"
+      "table_name": "periodic_processing_x1",
+      "column_name": "uid"
     },
     {
-      "table_name": "table_depX1",
-      "column_name": "_system_reg_agent_id"
+      "table_name": "periodic_processing_x1",
+      "column_name": "action"
     },
     {
-      "table_name": "table_depX1",
+      "table_name": "periodic_processing_x1",
+      "column_name": "eco_action_performed_at"
+    },
+    {
+      "table_name": "periodic_processing_x1",
+      "column_name": "quantity"
+    },
+    {
+      "table_name": "periodic_processing_x1",
       "column_name": "_system_sync_status"
     }
+  ]
+}
+```
+
+```json
+{
+  "target": [
+    {
+      "table_name": "periodic_processing_x1",
+      "column_name": "id"
+    }
   ],
-  "limit": 10
+  "where": {
+    "sync_status": ["unsynchronized"]
+  }
+}
+```
+
+```json
+{
+  "target": [
+    {
+      "table_name": "periodic_processing_x1",
+      "column_name": "id"
+    }
+  ],
+  "where": {
+    "sync_status": ["synchronized"],
+    "sync_destination": ["paiAgentT1"]
+  }
+}
+```
+
+```json
+{
+  "target": [
+    {
+      "table_name": "periodic_processing_x1",
+      "column_name": "id"
+    }
+  ],
+  "where": {
+    "condition": {
+      "relation": "or",
+      "exp": [
+        {
+          "table_name": "periodic_processing_x1",
+          "column_name": "id",
+          "operator": "=",
+          "value": 1
+        },
+        {
+          "table_name": "periodic_processing_x1",
+          "column_name": "id",
+          "operator": "=",
+          "value": 3
+        },
+        {
+          "table_name": "periodic_processing_x1",
+          "column_name": "id",
+          "operator": "=",
+          "value": 2
+        }
+      ]
+    },
+    "sync_status": ["synchronized"],
+    "sync_destination": ["paiAgentT1"]
+  }
 }
 ```
 
